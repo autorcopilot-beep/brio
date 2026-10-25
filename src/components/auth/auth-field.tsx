@@ -1,0 +1,2 @@
+import type { InputHTMLAttributes } from "react";
+export function AuthField({ label, ...props }: InputHTMLAttributes<HTMLInputElement> & { label:string }) { return <label className="block text-sm font-bold">{label}<input {...props} className="mt-2 h-12 w-full rounded-xl border border-[#d9d2ca] bg-white px-4 font-normal outline-none transition placeholder:text-[#9b958e] focus:border-black focus:ring-2 focus:ring-[#e8a87c]/40"/></label>; }

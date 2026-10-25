@@ -1,0 +1,6 @@
+import { ChevronRight, ListChecks } from "lucide-react";
+
+export function DataList({ items, empty = "Nenhum registro ainda." }: { items: Array<{ label: string; meta?: string; detail?: string; icon?: React.ReactNode; action?: React.ReactNode }>; empty?: string }) {
+  if (!items.length) return <div className="rounded-2xl border border-dashed border-[#cfc7bd] bg-[#fafaf7] p-6 text-center text-sm text-[#5e5a56]">{empty}</div>;
+  return <div className="divide-y divide-[#eee9e3] overflow-hidden rounded-[22px] border border-[#e9e3db] bg-white">{items.map((item, index) => <div key={item.label + index} className="group flex items-center gap-3 px-4 py-3.5 transition hover:bg-[#faf8f5]"><span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-[#f4f1ec] text-[#8b5c6c]">{item.icon ?? <ListChecks size={16}/>}</span><div className="min-w-0 flex-1"><p className="truncate text-sm font-bold text-[#171717]">{item.label}</p>{item.meta && <p className="mt-0.5 text-xs text-[#6f6963]">{item.meta}</p>}{item.detail && <p className="mt-1 text-xs leading-5 text-[#8a827b]">{item.detail}</p>}</div>{item.action ?? <ChevronRight size={16} className="text-[#b6ada4] transition group-hover:translate-x-0.5"/>}</div>)}</div>;
+}

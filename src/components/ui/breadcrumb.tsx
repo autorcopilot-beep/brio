@@ -1,0 +1,2 @@
+import Link from "next/link";
+export function Breadcrumb({items}:{items:{label:string;href?:string}[]}){return <nav aria-label="Breadcrumb" className="hidden items-center gap-2 text-sm md:flex"><ol className="flex items-center gap-2">{items.map((item,index)=><li key={item.label} className="flex items-center gap-2">{index>0&&<span className="text-[#b6ada4]">/</span>}{item.href?<Link href={item.href} className="text-[#5e5a56] hover:text-black">{item.label}</Link>:<span className="font-bold">{item.label}</span>}</li>)}</ol></nav>}

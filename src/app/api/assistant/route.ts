@@ -56,14 +56,14 @@ export async function POST(request: Request) {
       history: (history ?? []) as { role: "user" | "assistant"; content: string }[],
       message: agentMessage, allowWrites, preferences: preferences ?? undefined,
     });
-    const { error: assistantMessageError } = await supabase.from("assistant_messages").insert({
+    const { data: savedMessage, error: assistantMessageError } = await supabase.from("assistant_messages").insert({
       conversation_id: conversationId, user_id: user.id, role: "assistant", content: answer.text, tool_names: answer.toolNames, action_results: answer.actions, presentation: answer.presentation,
-    });
+    }).select("id").single();
     if (assistantMessageError) throw assistantMessageError;
     await supabase.from("assistant_conversations").update({ updated_at: new Date().toISOString() }).eq("id", conversationId);
     if (preferences?.memory_enabled !== false) await rememberAgentExchange({ supabase, userId: user.id, conversationId, userMessage: message, assistantMessage: answer.text, actions: answer.actions }).catch((memoryError) => console.error("Brio memory indexing failed", memoryError));
     await supabase.from("assistant_audit_events").insert({ user_id: user.id, conversation_id: conversationId, event_type: "response", input: { tool_names: answer.toolNames, actions: answer.actions }, output: { text: answer.text, tool_errors: answer.toolErrors ?? [] }, duration_ms: Date.now() - startedAt });
-    return NextResponse.json({ conversationId, message: answer.text, toolNames: answer.toolNames, actions: answer.actions, presentation: answer.presentation, toolErrors: answer.toolErrors ?? [] });
+    return NextResponse.json({ conversationId, messageId: savedMessage.id, message: answer.text, toolNames: answer.toolNames, actions: answer.actions, presentation: answer.presentation, toolErrors: answer.toolErrors ?? [] });
   } catch (error) {
     const code = error instanceof Error ? error.message : "UNKNOWN";
     if (code === "GEMINI_API_KEY_NOT_CONFIGURED") {

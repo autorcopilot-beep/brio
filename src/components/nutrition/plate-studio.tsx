@@ -41,7 +41,7 @@ export function PlateStudio() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
       const [{ data: catalog, error }, { data: profile }] = await Promise.all([
-        supabase.from("food_items").select("id,name,category,kcal_per_100g,protein_per_100g,carbs_per_100g,fat_per_100g").not("kcal_per_100g", "is", null).not("protein_per_100g", "is", null).not("carbs_per_100g", "is", null).not("fat_per_100g", "is", null).order("name").limit(600),
+        supabase.from("food_items").select("id,name,category,kcal_per_100g,protein_per_100g,carbs_per_100g,fat_per_100g").eq("is_active", true).not("kcal_per_100g", "is", null).not("protein_per_100g", "is", null).not("carbs_per_100g", "is", null).not("fat_per_100g", "is", null).order("name").limit(600),
         supabase.from("profiles").select("calorie_goal").eq("user_id", user.id).maybeSingle(),
       ]);
       const nextFoods = (catalog ?? []).map((food) => ({ ...food, kcal_per_100g: Number(food.kcal_per_100g), protein_per_100g: Number(food.protein_per_100g), carbs_per_100g: Number(food.carbs_per_100g), fat_per_100g: Number(food.fat_per_100g) })) as PlateFood[];

@@ -41,6 +41,12 @@ const sections = [
     icon: Bot,
   },
   {
+    href: "/assistente/marketplace",
+    label: "Marketplace da IA",
+    description: "Skills, plugins e extensões",
+    icon: Plug,
+  },
+  {
     href: "/profile/notificacoes",
     label: "Notificações",
     description: "Em breve",

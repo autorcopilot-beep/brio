@@ -1,0 +1,5 @@
+"use client";
+import { useState } from "react";
+import { createClient } from "@/lib/supabase/client";
+type Food={id:string;name:string;brand:string|null;category:string|null;image_url:string|null;is_active:boolean};
+export function CatalogAdmin({initial}:{initial:Food[]}){const[items,setItems]=useState(initial);async function toggle(item:Food){const next=!item.is_active;const{error}=await createClient().from("food_items").update({is_active:next}).eq("id",item.id);if(!error)setItems(v=>v.map(x=>x.id===item.id?{...x,is_active:next}:x))}return <div className="overflow-hidden rounded-[28px] border border-white/10">{items.map(item=><div key={item.id} className="grid grid-cols-[1fr_auto] gap-4 border-b border-white/10 p-4 last:border-0"><div><strong className="text-sm">{item.name}</strong><p className="mt-1 text-xs text-white/40">{item.brand||"Sem marca"} · {item.category||"Sem categoria"}</p></div><button onClick={()=>void toggle(item)} className={`rounded-full px-3 py-1 text-xs ${item.is_active?"bg-[#dbe9d8] text-[#284428]":"bg-white/10 text-white/50"}`}>{item.is_active?"Ativo":"Oculto"}</button></div>)}</div>}

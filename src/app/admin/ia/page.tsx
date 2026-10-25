@@ -1,0 +1,3 @@
+import { RuntimeSettings } from "@/components/admin/runtime-settings";
+import { requireAdmin } from "@/lib/admin";
+export default async function Page(){const{supabase}=await requireAdmin();const{data}=await supabase.from("assistant_runtime_settings").select("*").eq("id",true).single();return <><p className="text-xs tracking-[.18em] text-[#e3a28e]">CLOVIS</p><h1 className="mt-3 font-serif text-5xl">Configuração da IA</h1><p className="mt-3 max-w-2xl text-sm text-white/50">Mudanças publicadas passam a compor todas as novas respostas.</p><div className="mt-8 max-w-4xl rounded-[28px] border border-white/10 bg-white/[.035] p-6"><RuntimeSettings initial={data}/></div></>}

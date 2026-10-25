@@ -1,0 +1,3 @@
+import { CatalogAdmin } from "@/components/admin/catalog-admin";
+import { requireAdmin } from "@/lib/admin";
+export default async function Page(){const{supabase}=await requireAdmin();const{data}=await supabase.from("food_items").select("id,name,brand,category,image_url,is_active").order("updated_at",{ascending:false}).limit(100);return <><p className="text-xs tracking-[.18em] text-[#e3a28e]">ALIMENTAÇÃO</p><h1 className="mt-3 font-serif text-5xl">Catálogo</h1><p className="mt-3 text-sm text-white/50">100 itens atualizados recentemente. Itens ocultos deixam de ser oferecidos.</p><div className="mt-8 max-w-5xl"><CatalogAdmin initial={(data??[]) as never}/></div></>}

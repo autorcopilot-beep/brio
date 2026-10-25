@@ -13,7 +13,6 @@ import {
   Activity,
   Check,
   ChevronDown,
-  Clock3,
   Database,
   Dumbbell,
   Menu,
@@ -102,6 +101,20 @@ function loadingLabel(text: string) {
   if (/corpo|peso|medida|gordura/i.test(text))
     return "Comparando suas avaliações corporais";
   return "Relacionando seus registros";
+}
+
+function thinkingStages(text: string) {
+  if (/trein|muscul|exerc|carga/i.test(text)) return ["Lendo seus treinos", "Comparando volume e progressão", "Montando uma orientação segura"];
+  if (/aliment|refei|prote|calori|comida|catálogo|compras/i.test(text)) return ["Entendendo a refeição", "Consultando catálogo e preços", "Conferindo orçamento e nutrientes"];
+  if (/corpo|peso|medida|gordura/i.test(text)) return ["Lendo suas avaliações", "Comparando períodos", "Traduzindo a evolução"];
+  return [loadingLabel(text), "Selecionando o contexto útil", "Organizando a resposta"];
+}
+
+function ThinkingIndicator({ text }: { text: string }) {
+  const stages = useMemo(() => thinkingStages(text), [text]);
+  const [stage, setStage] = useState(0);
+  useEffect(() => { setStage(0); const timer = window.setInterval(() => setStage((current) => Math.min(current + 1, stages.length - 1)), 1700); return () => window.clearInterval(timer); }, [stages]);
+  return <div className="mt-8 w-full max-w-5xl"><div className="flex items-center gap-3 rounded-full bg-white/75 px-4 py-3 text-xs text-[#625d58] shadow-sm"><span className="relative flex h-6 w-6 items-center justify-center"><span className="absolute h-6 w-6 animate-ping rounded-full bg-[#c38d9e]/20"/><Sparkles size={14}/></span><span key={stages[stage]} className="animate-pulse">{stages[stage]}</span><span className="ml-auto flex gap-1" aria-hidden>{[0,1,2].map(dot=><i key={dot} className="h-1 w-1 animate-bounce rounded-full bg-[#8b5c6c]" style={{animationDelay:`${dot*120}ms`}}/>)}</span></div></div>;
 }
 
 function Prose({ content }: { content: string }) {
@@ -248,6 +261,7 @@ export function AssistantChat() {
   const [conversationId, setConversationId] = useState("");
   const [draft, setDraft] = useState("");
   const [loading, setLoading] = useState(false);
+  const [revealingId, setRevealingId] = useState("");
   const [error, setError] = useState("");
   const [railOpen, setRailOpen] = useState(false);
   const [assistantIdentity, setAssistantIdentity] = useState({
@@ -379,6 +393,7 @@ export function AssistantChat() {
       const payload = (await response.json()) as {
         error?: string;
         conversationId?: string;
+        messageId?: string;
         message?: string;
         toolNames?: string[];
         actions?: { url?: string }[];
@@ -387,19 +402,32 @@ export function AssistantChat() {
       if (!response.ok || !payload.message || !payload.conversationId)
         throw new Error(payload.error || "Não foi possível responder.");
       setConversationId(payload.conversationId);
+      const responseId = payload.messageId ?? crypto.randomUUID();
+      const completedAt = new Date().toISOString();
       setMessages((items) => [
         ...items,
         {
-          id: crypto.randomUUID(),
+          id: responseId,
           role: "assistant",
-          content: payload.message!,
+          content: "",
           tool_names: payload.toolNames ?? [],
           action_results: payload.actions ?? [],
-          presentation: payload.presentation,
-          created_at: new Date().toISOString(),
+          created_at: completedAt,
           duration_ms: performance.now() - started.current,
         },
       ]);
+      setLoading(false);
+      setRevealingId(responseId);
+      const words = payload.message.match(/\S+\s*/g) ?? [payload.message];
+      let visible = "";
+      for (let index = 0; index < words.length; index += 3) {
+        visible += words.slice(index, index + 3).join("");
+        const current = visible;
+        setMessages((items) => items.map((item) => item.id === responseId ? { ...item, content: current } : item));
+        await new Promise((resolve) => window.setTimeout(resolve, 24));
+      }
+      setMessages((items) => items.map((item) => item.id === responseId ? { ...item, content: payload.message!, presentation: payload.presentation } : item));
+      setRevealingId("");
       await loadConversations();
     } catch (caught) {
       setError(
@@ -528,6 +556,7 @@ export function AssistantChat() {
                   </div>
                   <div className="mt-4">
                     <Prose content={item.content} />
+                    {revealingId === item.id && <span className="mt-1 inline-block h-5 w-0.5 animate-pulse bg-[#8b5c6c]" aria-label="CLOVIS está escrevendo" />}
                   </div>
                   <AssistantPresentationCard
                     presentation={item.presentation}
@@ -601,18 +630,7 @@ export function AssistantChat() {
             )}
           </div>
 
-          {loading && (
-            <div className="mt-8 w-full max-w-5xl">
-              <div className="flex items-center gap-3 rounded-full bg-white/75 px-4 py-3 text-xs text-[#625d58] shadow-sm">
-                <span className="relative flex h-6 w-6 items-center justify-center">
-                  <span className="absolute h-6 w-6 animate-ping rounded-full bg-[#c38d9e]/20" />
-                  <Sparkles size={14} />
-                </span>
-                <span>{loadingLabel(messages.at(-1)?.content ?? draft)}</span>
-                <Clock3 size={12} className="ml-auto" />
-              </div>
-            </div>
-          )}
+          {loading && <ThinkingIndicator text={messages.at(-1)?.content ?? draft}/>} 
           {error && (
             <p
               role="alert"

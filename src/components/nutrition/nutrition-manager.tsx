@@ -22,7 +22,7 @@ async function fetchFoodCatalog() {
   const supabase = createClient();
   const catalog: FoodCatalogFood[] = [];
   for (let from = 0; ; from += 1000) {
-    const { data, error } = await supabase.from("food_items").select(foodSelect).order("name").range(from, from + 999);
+    const { data, error } = await supabase.from("food_items").select(foodSelect).eq("is_active", true).order("name").range(from, from + 999);
     if (error) return { data: catalog, error };
     catalog.push(...((data ?? []) as FoodCatalogFood[]));
     if (!data || data.length < 1000) return { data: catalog, error: null };

@@ -138,8 +138,8 @@ export async function runAgentTool(supabase: SupabaseClient, userId: string, nam
     const query = typeof args.query === "string" ? args.query.trim().replace(/[,_%]/g, " ") : "";
     const category = typeof args.category === "string" ? args.category.trim() : "";
     const limit = Math.min(100, Math.max(5, Number(args.limit) || 40));
-    let readyQuery = supabase.from("food_items").select("id,name,brand,category,subcategory,package_description,ingredients,allergen_statement,kcal_per_100g,protein_per_100g,carbs_per_100g,fat_per_100g,price_per_100g,source_url,data_quality_status,catalog_source,catalog_metadata").or("user_id.eq." + userId + ",user_id.is.null");
-    let referenceQuery = supabase.from("food_items").select("id,name,brand,category,package_description,ingredients,allergen_statement,price_per_100g,kcal_per_100g,protein_per_100g,carbs_per_100g,fat_per_100g,source_url,data_quality_status").or("user_id.eq." + userId + ",user_id.is.null");
+    let readyQuery = supabase.from("food_items").select("id,name,brand,category,subcategory,package_description,ingredients,allergen_statement,kcal_per_100g,protein_per_100g,carbs_per_100g,fat_per_100g,price_per_100g,source_url,data_quality_status,catalog_source,catalog_metadata").eq("is_active", true).or("user_id.eq." + userId + ",user_id.is.null");
+    let referenceQuery = supabase.from("food_items").select("id,name,brand,category,package_description,ingredients,allergen_statement,price_per_100g,kcal_per_100g,protein_per_100g,carbs_per_100g,fat_per_100g,source_url,data_quality_status").eq("is_active", true).or("user_id.eq." + userId + ",user_id.is.null");
     if (query) {
       const filter = `name.ilike.%${query}%,brand.ilike.%${query}%,subcategory.ilike.%${query}%`;
       readyQuery = readyQuery.or(filter);

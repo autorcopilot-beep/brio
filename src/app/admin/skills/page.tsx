@@ -1,0 +1,3 @@
+import { CapabilityManager } from "@/components/admin/capability-manager";
+import { requireAdmin } from "@/lib/admin";
+export default async function Page(){const{supabase}=await requireAdmin();const{data}=await supabase.from("assistant_capabilities").select("*").order("updated_at",{ascending:false});return <><p className="text-xs tracking-[.18em] text-[#e3a28e]">CONHECIMENTO MODULAR</p><h1 className="mt-3 font-serif text-5xl">Skills & Marketplace</h1><p className="mt-3 max-w-3xl text-sm leading-6 text-white/50">Crie habilidades, plugins e extensões. O JSON <code>brio.skill.1</code> separa fonte, evidências, procedimentos, ativação e limites de segurança.</p><div className="mt-8"><CapabilityManager initial={(data??[]) as never}/></div></>}

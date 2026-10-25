@@ -15,6 +15,17 @@ export type PresentationChart = {
   points: Array<{ label: string; value: number }>;
 };
 export type PresentationTable = { columns: string[]; rows: string[][] };
+export type ResponseStyle = {
+  patternId?: string;
+  icon?: string;
+  animation?: "typewriter" | "fade-up" | "stagger" | "none";
+  tableStyle?: "soft" | "compact" | "striped" | "cards";
+  interactionMode?: "suggestions" | "confirm" | "actions" | "none";
+  density?: "compact" | "comfortable";
+  showMetrics?: boolean;
+  showSourceBadge?: boolean;
+  accent?: string;
+};
 export type AssistantPresentation = {
   context: "general" | "nutrition" | "workout" | "body" | "weekly";
   label: string;
@@ -24,6 +35,7 @@ export type AssistantPresentation = {
   chart?: PresentationChart;
   table?: PresentationTable;
   suggestions?: string[];
+  responseStyle?: ResponseStyle;
 };
 
 export type ToolSnapshot = {

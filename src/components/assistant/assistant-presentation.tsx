@@ -4,12 +4,14 @@ import {
   Activity,
   ArrowUpRight,
   BarChart3,
+  ChartNoAxesCombined,
   Check,
   Database,
   Dumbbell,
   ShoppingBasket,
   Sparkles,
   Utensils,
+  MessageSquareText,
 } from "lucide-react";
 import Link from "next/link";
 import type {
@@ -25,6 +27,7 @@ const contextIcon = {
   weekly: Sparkles,
   general: Database,
 };
+const configurableIcons = { Sparkles, Dumbbell, Utensils, Activity, Database, BarChart3, ChartNoAxesCombined, ShoppingBasket, MessageSquareText };
 const contextUrl = {
   nutrition: "/alimentacao",
   workout: "/musculacao",
@@ -117,7 +120,7 @@ function MiniChart({ chart }: { chart: PresentationChart }) {
   );
 }
 
-function DataTable({ table }: { table: PresentationTable }) {
+function DataTable({ table, style = "soft" }: { table: PresentationTable; style?: "soft" | "compact" | "striped" | "cards" }) {
   return (
     <section className="overflow-hidden rounded-[24px] bg-white/80 p-2 shadow-[0_18px_55px_rgba(38,31,25,.07)] ring-1 ring-black/[.04]">
       <div className="overflow-x-auto">
@@ -136,11 +139,11 @@ function DataTable({ table }: { table: PresentationTable }) {
           </thead>
           <tbody>
             {table.rows.map((row, rowIndex) => (
-              <tr key={rowIndex} className="group">
+              <tr key={rowIndex} className={`group ${style === "striped" && rowIndex % 2 ? "bg-[#ece8e2]" : ""}`}>
                 {row.map((cell, cellIndex) => (
                   <td
                     key={cellIndex}
-                    className={`bg-[#f5f3ef] px-4 py-3 text-xs group-hover:bg-[#efece7] ${cellIndex === 0 ? "rounded-l-xl font-semibold" : ""} ${cellIndex === row.length - 1 ? "rounded-r-xl" : ""}`}
+                    className={`${style === "cards" ? "border-y-4 border-white bg-[#f2eee9]" : style === "striped" ? "bg-transparent" : "bg-[#f5f3ef]"} px-4 ${style === "compact" ? "py-2" : "py-3"} text-xs group-hover:bg-[#efece7] ${cellIndex === 0 ? "rounded-l-xl font-semibold" : ""} ${cellIndex === row.length - 1 ? "rounded-r-xl" : ""}`}
                   >
                     {cell}
                   </td>
@@ -171,10 +174,12 @@ export function AssistantPresentationCard({
       !presentation.table)
   )
     return null;
-  const Icon = contextIcon[presentation.context] ?? Sparkles;
+  const Icon = configurableIcons[presentation.responseStyle?.icon as keyof typeof configurableIcons] ?? contextIcon[presentation.context] ?? Sparkles;
   const destination = actionUrl ?? contextUrl[presentation.context];
+  const style = presentation.responseStyle;
+  const animationClass = style?.animation === "fade-up" ? "response-fade-up" : style?.animation === "stagger" ? "response-stagger" : "";
   return (
-    <div className="relative mt-7">
+    <div className={`relative mt-7 ${animationClass}`}>
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2 text-[10px] font-bold tracking-[.15em] text-[#775a62]">
           <span className="grid h-7 w-7 place-items-center rounded-full bg-[#eee8e4]">
@@ -182,12 +187,12 @@ export function AssistantPresentationCard({
           </span>
           {presentation.label}
         </div>
-        <span className="inline-flex items-center gap-1.5 rounded-full bg-[#edf1e9] px-2.5 py-1 text-[9px] font-bold text-[#617064]">
+        {style?.showSourceBadge !== false && <span className="inline-flex items-center gap-1.5 rounded-full bg-[#edf1e9] px-2.5 py-1 text-[9px] font-bold text-[#617064]">
           <Check size={11} /> DADOS DO BRIO
-        </span>
+        </span>}
       </div>
 
-      {presentation.metrics?.length ? (
+      {presentation.metrics?.length && style?.showMetrics !== false ? (
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
           {presentation.metrics.map((metric, index) => (
             <article
@@ -215,7 +220,7 @@ export function AssistantPresentationCard({
           className={`mt-3 grid gap-3 ${presentation.chart && presentation.table ? "xl:grid-cols-[.82fr_1.18fr]" : ""}`}
         >
           {presentation.chart && <MiniChart chart={presentation.chart} />}{" "}
-          {presentation.table && <DataTable table={presentation.table} />}
+          {presentation.table && <DataTable table={presentation.table} style={style?.tableStyle} />}
         </div>
       )}
 
@@ -270,7 +275,7 @@ export function AssistantPresentationCard({
             <ShoppingBasket size={12} /> Catálogo conectado
           </span>
         )}
-        {presentation.suggestions?.map((suggestion) => (
+        {style?.interactionMode !== "none" && presentation.suggestions?.map((suggestion) => (
           <button
             key={suggestion}
             onClick={() => onSuggestion(suggestion)}

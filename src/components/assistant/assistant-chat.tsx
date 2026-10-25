@@ -418,13 +418,16 @@ export function AssistantChat() {
       ]);
       setLoading(false);
       setRevealingId(responseId);
+      const animation = payload.presentation?.responseStyle?.animation ?? "typewriter";
       const words = payload.message.match(/\S+\s*/g) ?? [payload.message];
       let visible = "";
-      for (let index = 0; index < words.length; index += 3) {
-        visible += words.slice(index, index + 3).join("");
+      const chunkSize = animation === "none" ? words.length : animation === "fade-up" ? 8 : animation === "stagger" ? 5 : 3;
+      const delay = animation === "none" ? 0 : animation === "fade-up" ? 18 : animation === "stagger" ? 28 : 24;
+      for (let index = 0; index < words.length; index += chunkSize) {
+        visible += words.slice(index, index + chunkSize).join("");
         const current = visible;
         setMessages((items) => items.map((item) => item.id === responseId ? { ...item, content: current } : item));
-        await new Promise((resolve) => window.setTimeout(resolve, 24));
+        if (delay) await new Promise((resolve) => window.setTimeout(resolve, delay));
       }
       setMessages((items) => items.map((item) => item.id === responseId ? { ...item, content: payload.message!, presentation: payload.presentation } : item));
       setRevealingId("");

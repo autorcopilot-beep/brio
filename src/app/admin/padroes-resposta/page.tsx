@@ -1,0 +1,3 @@
+import { ResponsePatternManager } from "@/components/admin/response-pattern-manager";
+import { requireAdmin } from "@/lib/admin";
+export default async function Page(){const{supabase}=await requireAdmin();const{data}=await supabase.from("assistant_response_patterns").select("*").order("priority",{ascending:false});return <><p className="text-xs tracking-[.18em] text-[#e3a28e]">LINGUAGEM VISUAL</p><h1 className="mt-3 font-serif text-5xl">Padrões de resposta</h1><p className="mt-3 max-w-3xl text-sm leading-6 text-white/50">Defina como cada tipo de resposta pensa, se organiza e se apresenta: animação, tabelas, ícones, densidade e interações.</p><div className="mt-8"><ResponsePatternManager initial={(data??[]) as never}/></div></>}

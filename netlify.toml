@@ -2,7 +2,10 @@
   command = "npm run build"
 
 [build.environment]
-  NODE_VERSION = "20"
+  NODE_VERSION = "22"
+  # Public model identifiers can legitimately appear in the server bundle.
+  # The API key remains scanned and server-only.
+  SECRETS_SCAN_OMIT_KEYS = "GEMINI_MODEL,GEMINI_PRO_MODEL,GEMINI_FALLBACK_MODEL"
 
 [[redirects]]
   from = "/api/*"

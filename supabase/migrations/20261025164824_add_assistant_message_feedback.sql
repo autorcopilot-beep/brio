@@ -7,6 +7,9 @@ create table if not exists public.assistant_message_feedback (
   unique (message_id, user_id)
 );
 
+create index if not exists assistant_message_feedback_user_idx
+  on public.assistant_message_feedback(user_id);
+
 alter table public.assistant_message_feedback enable row level security;
 
 create policy "Users select own assistant feedback" on public.assistant_message_feedback

@@ -3,6 +3,8 @@
 
 [build.environment]
   NODE_VERSION = "20"
+  # Model names are not secrets; they also appear as defaults in source and build output
+  SECRETS_SCAN_OMIT_KEYS = "GEMINI_MODEL,GEMINI_FALLBACK_MODEL,GEMINI_PRO_MODEL"
 
 [[redirects]]
   from = "/api/*"

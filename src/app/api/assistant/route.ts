@@ -3,6 +3,15 @@ import { answerWithBrioAgent } from "@/lib/agent/brio-agent";
 import { createClient } from "@/lib/supabase/server";
 import { rememberAgentExchange } from "@/lib/agent/memory";
 
+function agentFailureMessage(error: unknown) {
+  const status = typeof error === "object" && error !== null && "status" in error ? Number((error as { status?: unknown }).status) : 0;
+  const message = error instanceof Error ? error.message.toLowerCase() : String(error).toLowerCase();
+  if ([401, 403].includes(status) || /api key|api_key|permission|unauthenticated|invalid.*key/.test(message)) return { error: "A chave do Gemini no ambiente de produção é inválida ou não tem permissão para este modelo.", code: "GEMINI_AUTH_FAILED" };
+  if (status === 404 || /model.*not found|not found.*model|unsupported model/.test(message)) return { error: "O modelo configurado para o CLOVIS não está disponível nesta conta do Gemini.", code: "GEMINI_MODEL_UNAVAILABLE" };
+  if (status === 429 || /quota|rate limit|resource exhausted/.test(message)) return { error: "O Gemini atingiu o limite de uso. Aguarde alguns instantes e tente novamente.", code: "GEMINI_QUOTA_EXCEEDED" };
+  return { error: "O CLOVIS não conseguiu acessar o Gemini agora. Verifique as variáveis GEMINI_API_KEY e GEMINI_MODEL no Netlify.", code: "GEMINI_REQUEST_FAILED" };
+}
+
 export async function POST(request: Request) {
   const startedAt = Date.now();
   const supabase = await createClient();
@@ -62,6 +71,6 @@ export async function POST(request: Request) {
     }
     console.error("Brio agent failed", error);
     await supabase.from("assistant_audit_events").insert({ user_id: user.id, conversation_id: conversationId, event_type: "error", input: { message, agent_message: agentMessage }, output: { code }, duration_ms: Date.now() - startedAt });
-    return NextResponse.json({ error: "O assistente não conseguiu responder agora. Tente novamente em instantes." }, { status: 502 });
+    return NextResponse.json(agentFailureMessage(error), { status: 502 });
   }
 }
